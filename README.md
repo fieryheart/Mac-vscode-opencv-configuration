@@ -1,36 +1,36 @@
 # macOS+vscode+opencv环境配置
 
-## 版本说明
+## 1. 版本说明
 
 + macOS: 10.14.3  
 + vscode: 1.32.3
 + opencv: 3.4.0
 
-## opencv的安装
+## 2. opencv的安装
 
 我选择的方案是下载压缩包，使用终端进行编译。
 
-1. 安装cmake，`brew install cmake`
+2.1. 安装cmake，`brew install cmake`
 
-2. 终端进入解压之后的文件夹位置，`cd /Users/$(your_user_name)/opencv`， 然后创建一个新的文件夹，`mkdir build`， 文件夹命名为build
+2.2 终端进入解压之后的文件夹位置，`cd /Users/$(your_user_name)/opencv`， 然后创建一个新的文件夹，`mkdir build`， 文件夹命名为build
 
-3. 终端进入文件夹build，`cd build`
+2.3 终端进入文件夹build，`cd build`
 
-4. cmake编译，`cmake -G "Unix Makefiles" ..`
+2.4 cmake编译，`cmake -G "Unix Makefiles" ..`
 
-5. 然后，`make -j8`
+2.4 然后，`make -j8`
 
-6. 最后，`sudo make install`  
+2.6 最后，`sudo make install`  
 
 opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应该会出现opencv和opencv2两个文件夹，opencv也算安装完成。
 
-## vscode的c/c++执行以及调试环境搭建（非opencv）
+## 3. vscode的c/c++执行以及调试环境搭建（非opencv）
 
 文件目录如下：  
 ![Alt text](/img/directory.jpg)  
 创建4个文件，分别为`c_cpp_properties.json`、`launch.json`、`tasks.json`和`setting.json`，接下来就是这个四个文件的内容，（Tips: 在这些文件中，将鼠标悬浮在属性上，会出现说明，比如你将鼠标悬浮在`c_cpp_properties.json`中的`compilePath`上会出现`Full path of the compile being used`文字说明）
 
-### c_cpp_properties.json
+### 3.1 c_cpp_properties.json
 
 随便打开一个C++源文件，点击一下`#include`旁边的黄灯，然后点击`Add include path to settings`，VScode会弹出`c_cpp_properties.json`，`c_cpp_properties.json`时用来配置`#include`的路径环境。
 
@@ -65,7 +65,7 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
 
 其中，关注`includePath`和`browse.path`，在后面配置opencv时会用到
 
-### launch.json
+### 3.2 launch.json
 
 `launch.json`在debug模式下会自动生成，是用来配置debug环境的。
 
@@ -95,7 +95,7 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
 
 其中，`program`属性中文件的后缀与自身系统有关，文件默认是没有后缀名的；`"preLaunchTask":"build hello world"`表示执行文件前需要编译的任务，具体任务内容在`tasks.json`中定义。
 
-### tasks.json
+### 3.3 tasks.json
 
 快捷键`shift+command+p` 打开`Tasks: Configure Tasks`，选择 `Create tasks.json file from templates`，此时会蹦出一个下拉列表，在下拉列表中选择`Others`。
 
@@ -131,7 +131,7 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
 
 其中，`label`中写上与`launch.json`的`preLaunchTask`相同的值；`command`选择你使用的编译器(`g++`或`clang++`)，注意`args`的值，在后面debug中因为要配置opencv所以会更改值。
 
-### setting.json
+### 3.4 setting.json
 
 需要安装`code-runner`这个扩展文件，`setting.json`是工作区设置。vscode中进入`Code -> Preferences -> Settings`选择某个属性，然后点击`Edit in settings.json`让其自动生成`setting.json`，这个文件是在设置运行状态的环境的。
 
@@ -150,3 +150,239 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
 ```
 
 `executorMap`属性中，默认的执行器是`g++`，这样设置后，使用`control+option+N`会把执行器换成`clang++`。
+
+## 4. 引入头文件和外链库（如opencv）
+
+修改三个文件，分别为`c_cpp_properties.json`、`tasks.json`和`settings.json`，创建编译文件`Makefile`
+
+### 4.1 c_cpp_properties.json修改
+
+```js
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/local/include"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks",
+                "${workspaceFolder}/**"
+            ],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"，
+                    "/usr/local/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 4
+}
+```
+
+修改`"includePath"`和`"browser.path"`
+
+### 4.2 tasks.json修改
+
+```js
+{
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "build hello world",
+      "command": "clang++",
+      "args": [
+        "-g",
+        "${file}",
+        "-o",
+        "${fileDirname}/${fileBasenameNoExtension}.out",
+        "-I",
+        "/usr/local/include/opencv",
+        "-I",
+        "/usr/local/include/",
+        "-L",
+        "/usr/local/lib",
+        "-l",
+        "opencv_stitching",
+        "-l",
+        "opencv_superres",
+        "-l",
+        "opencv_videostab",
+        "-l",
+        "opencv_aruco",
+        "-l",
+        "opencv_bgsegm",
+        "-l",
+        "opencv_bioinspired",
+        "-l",
+        "opencv_ccalib",
+        "-l",
+        "opencv_dnn_objdetect",
+        "-l",
+        "opencv_dpm",
+        "-l",
+        "opencv_face",
+        "-l",
+        "opencv_fuzzy",
+        "-l",
+        "opencv_hfs",
+        "-l",
+        "opencv_img_hash",
+        "-l",
+        "opencv_line_descriptor",
+        "-l",
+        "opencv_optflow",
+        "-l",
+        "opencv_reg",
+        "-l",
+        "opencv_rgbd",
+        "-l",
+        "opencv_saliency",
+        "-l",
+        "opencv_stereo",
+        "-l",
+        "opencv_structured_light",
+        "-l",
+        "opencv_phase_unwrapping",
+        "-l",
+        "opencv_surface_matching",
+        "-l",
+        "opencv_tracking",
+        "-l",
+        "opencv_datasets",
+        "-l",
+        "opencv_dnn",
+        "-l",
+        "opencv_plot",
+        "-l",
+        "opencv_xfeatures2d",
+        "-l",
+        "opencv_shape",
+        "-l",
+        "opencv_video",
+        "-l",
+        "opencv_ml",
+        "-l",
+        "opencv_ximgproc",
+        "-l",
+        "opencv_xobjdetect",
+        "-l",
+        "opencv_objdetect",
+        "-l",
+        "opencv_calib3d",
+        "-l",
+        "opencv_features2d",
+        "-l",
+        "opencv_highgui",
+        "-l",
+        "opencv_videoio",
+        "-l",
+        "opencv_imgcodecs",
+        "-l",
+        "opencv_flann",
+        "-l",
+        "opencv_xphoto",
+        "-l",
+        "opencv_photo",
+        "-l",
+        "opencv_imgproc",
+        "-l",
+        "opencv_core",
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    }
+  ],
+  "version": "2.0.0"
+}
+```
+
+其中，`command`使用`clang++`, `args`添加了opencv库的路径，可以在终端中输入`pkg-config opencv --libs —cflags`，来依次添加参数，如我的是这样的：
+![Alt text](/img/opencv_path.jpg)
+
+### 4.3 settings.json修改
+
+```js
+{
+    "code-runner.executorMap": {
+        "c": "cd $dir && make && ./$fileNameWithoutExt && make clean",
+        "cpp": "cd $dir && make && ./$fileNameWithoutExt && make clean",
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.enableAppInsights": false,
+    "[makefile]": {
+        "editor.insertSpaces": true
+    },
+    "C_Cpp.default.includePath": [
+        "/usr/local/include"
+    ]
+}
+```
+
+重要的是`code-runner.executorMap`中的修改，使用了`make`
+
+### 4.4 创建Makefile
+
+```make
+TARGET = ./main
+
+SRCS := $(wildcard ./src/*.cpp ./*.cpp)
+
+OBJS := $(patsubst %cpp,%o,$(SRCS))
+
+CFLG = -g -Wall -I/usr/local/include -Iinc -I./ -std=c++11
+
+LDFG = -Wl, $(shell pkg-config opencv --cflags --libs)
+
+CXX = clang++
+
+$(TARGET) : $(OBJS)
+	$(CXX) -o $(TARGET) $(OBJS) $(LDFG)
+
+
+%.o:%.cpp
+	$(CXX) $(CFLG) -c $< -o $@ 
+
+.PHONY : clean
+clean:
+	-rm ./*.o
+```
+
+Makefile的语法请自行了解。
+
+## 5. 总结
+
+> 本来是可以使用visual studio的，但由于我个人比较喜欢轻量的编辑器，而且vscode优秀的extensions，让我想在vscode中开发c/c++项目，但这搭建的过程可真是让我煞费苦心，参考了很多资料，但都不详细，还要一个一个实验这些配置文件都是用来做什么的，在最后配置opencv的时候还要纠结是用brew安装还是编译压缩包，都是填完一坑又出新的坑...不过也算皇天不负有心人，最后是完整地搭建好了环境...希望我的这篇环境搭建对使用这有帮助...
+
+## 6. 参考
+
+### 6.1 opencv压缩包编译链接
+
+https://www.jianshu.com/p/a36d41241ae8
+
+### 6.2 相关配置文件 部分介绍
+
+http://blog.biochen.com/archives/858
+
+### 6.3 vscode中c/c++执行和调试单个程序
+
+https://blog.csdn.net/qq_22073849/article/details/88895786
+
+### 6.6 vscode搭建需要引入头文件和链接库的中型或大型项目
+
+https://blog.csdn.net/qq_22073849/article/details/88893201
