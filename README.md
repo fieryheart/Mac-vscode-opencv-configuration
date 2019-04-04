@@ -196,13 +196,16 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
 
 ```js
 {
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  // 有关 tasks.json 格式的文档，请参见
+  // https://go.microsoft.com/fwlink/?LinkId=733558
   "tasks": [
     {
       "type": "shell",
-      "label": "build hello world",
+      "label": "build",
       "command": "clang++",
       "args": [
-        "-g",
         "${file}",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}.out",
@@ -213,71 +216,19 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
         "-L",
         "/usr/local/lib",
         "-l",
+        "opencv_dnn",
+        "-l",
+        "opencv_ml",
+        "-l",
+        "opencv_objdetect",
+        "-l",
+        "opencv_shape",
+        "-l",
         "opencv_stitching",
         "-l",
         "opencv_superres",
         "-l",
         "opencv_videostab",
-        "-l",
-        "opencv_aruco",
-        "-l",
-        "opencv_bgsegm",
-        "-l",
-        "opencv_bioinspired",
-        "-l",
-        "opencv_ccalib",
-        "-l",
-        "opencv_dnn_objdetect",
-        "-l",
-        "opencv_dpm",
-        "-l",
-        "opencv_face",
-        "-l",
-        "opencv_fuzzy",
-        "-l",
-        "opencv_hfs",
-        "-l",
-        "opencv_img_hash",
-        "-l",
-        "opencv_line_descriptor",
-        "-l",
-        "opencv_optflow",
-        "-l",
-        "opencv_reg",
-        "-l",
-        "opencv_rgbd",
-        "-l",
-        "opencv_saliency",
-        "-l",
-        "opencv_stereo",
-        "-l",
-        "opencv_structured_light",
-        "-l",
-        "opencv_phase_unwrapping",
-        "-l",
-        "opencv_surface_matching",
-        "-l",
-        "opencv_tracking",
-        "-l",
-        "opencv_datasets",
-        "-l",
-        "opencv_dnn",
-        "-l",
-        "opencv_plot",
-        "-l",
-        "opencv_xfeatures2d",
-        "-l",
-        "opencv_shape",
-        "-l",
-        "opencv_video",
-        "-l",
-        "opencv_ml",
-        "-l",
-        "opencv_ximgproc",
-        "-l",
-        "opencv_xobjdetect",
-        "-l",
-        "opencv_objdetect",
         "-l",
         "opencv_calib3d",
         "-l",
@@ -289,15 +240,16 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
         "-l",
         "opencv_imgcodecs",
         "-l",
-        "opencv_flann",
-        "-l",
-        "opencv_xphoto",
+        "opencv_video",
         "-l",
         "opencv_photo",
         "-l",
         "opencv_imgproc",
         "-l",
+        "opencv_flann",
+        "-l",
         "opencv_core",
+        "-g"
       ],
       "group": {
         "kind": "build",
@@ -369,20 +321,24 @@ Makefile的语法请自行了解。
 
 > 本来是可以使用visual studio的，但由于我个人比较喜欢轻量的编辑器，而且vscode优秀的extensions，让我想在vscode中开发c/c++项目，但这搭建的过程可真是让我煞费苦心，参考了很多资料，但都不详细，还要一个一个实验这些配置文件都是用来做什么的，在最后配置opencv的时候还要纠结是用brew安装还是编译压缩包，都是填完一坑又出新的坑...不过也算皇天不负有心人，最后是完整地搭建好了环境...希望我的这篇环境搭建对使用这有帮助...
 
-## 6. 参考
+## 6. 存在的问题
 
-### 6.1 opencv压缩包编译链接
+> 调试的时候还不能进行多文件编译
+
+## 7. 参考
+
+### 7.1 opencv压缩包编译链接
 
 https://www.jianshu.com/p/a36d41241ae8
 
-### 6.2 相关配置文件 部分介绍
+### 7.2 相关配置文件 部分介绍
 
 http://blog.biochen.com/archives/858
 
-### 6.3 vscode中c/c++执行和调试单个程序
+### 7.3 vscode中c/c++执行和调试单个程序
 
 https://blog.csdn.net/qq_22073849/article/details/88895786
 
-### 6.6 vscode搭建需要引入头文件和链接库的中型或大型项目
+### 7.4 vscode搭建需要引入头文件和链接库的中型或大型项目
 
 https://blog.csdn.net/qq_22073849/article/details/88893201
