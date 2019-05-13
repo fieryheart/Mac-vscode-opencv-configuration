@@ -264,7 +264,7 @@ opencv的库文件会出现在`build/lib`中，并且在`/usr/local/include`应�
 }
 ```
 
-其中，`command`使用`clang++`, `args`添加了opencv库的路径，可以在终端中输入`pkg-config opencv --libs —cflags`，来依次添加参数，如我的是这样的：
+其中，`command`使用`clang++`, `args`添加了opencv库的路径，可以在终端中输入`pkg-config opencv --libs —-cflags`，来依次添加参数，如我的是这样的：
 ![Alt text](/img/opencv_path.jpg)
 
 ### 4.3 settings.json修改
